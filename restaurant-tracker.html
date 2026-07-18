@@ -3,39 +3,39 @@
 <title>บันทึกข้อมูลการพาลูกค้าไปรับประทานอาหาร</title>
 <style>
   :root {
-    --bg: #fff6f0;
-    --card: #ffffff;
-    --primary: #f5385d;
-    --primary-dark: #d61f47;
-    --primary-rgb: 245, 56, 93;
-    --accent: #ff8a3d;
-    --text: #2b2130;
-    --muted: #8a7f86;
-    --border: #f0e4e0;
-    --danger: #e11d48;
-    --warn-bg: #fff4d6;
-    --warn-border: #f59e0b;
-    --warn-text: #92400e;
-    --ok: #16a34a;
-    --shadow: 0 4px 18px rgba(245,56,93,.08), 0 1px 3px rgba(0,0,0,.05);
+    --bg: #f8f3ec;
+    --card: #fffdfa;
+    --primary: #b5714e;
+    --primary-dark: #935733;
+    --primary-rgb: 181, 113, 78;
+    --accent: #d99a5b;
+    --text: #43382e;
+    --muted: #9d8d7c;
+    --border: #e9ddcd;
+    --danger: #c0492f;
+    --warn-bg: #f7ecd2;
+    --warn-border: #d99a5b;
+    --warn-text: #8a5a2f;
+    --ok: #6b8e23;
+    --shadow: 0 6px 20px rgba(150,100,60,.10), 0 1px 3px rgba(80,50,20,.05);
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: 'Segoe UI', 'Sarabun', system-ui, -apple-system, sans-serif;
     background:
-      radial-gradient(1200px 400px at 100% -10%, rgba(255,138,61,.14), transparent),
-      radial-gradient(1000px 400px at -10% 0%, rgba(245,56,93,.10), transparent),
+      radial-gradient(1200px 400px at 100% -10%, rgba(217,154,91,.14), transparent),
+      radial-gradient(1000px 400px at -10% 0%, rgba(181,113,78,.10), transparent),
       var(--bg);
     color: var(--text);
     line-height: 1.5;
   }
   header {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #d29a68 0%, #b5714e 50%, #8c5636 100%);
     color: #fff;
     padding: 30px 20px 34px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(245,56,93,.28);
+    box-shadow: 0 10px 30px rgba(140,86,54,.28);
     position: relative;
     overflow: hidden;
   }
@@ -54,7 +54,7 @@
     box-shadow: var(--shadow);
     padding: 22px;
     margin-bottom: 20px;
-    border: 1px solid rgba(245,56,93,.06);
+    border: 1px solid rgba(181,113,78,.10);
   }
   .card h2 {
     margin: 0 0 16px; font-size: 17px; font-weight: 700;
@@ -94,11 +94,11 @@
     font-size: 12px; font-weight: 700; white-space: nowrap;
   }
   .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .8; }
-  .g-Automotive { background: #e0edff; color: #1d4ed8; }
-  .g-Agricultural { background: #d9fbe7; color: #0f9d58; }
-  .g-Electrical { background: #fff2cc; color: #d97706; }
-  .g-Other { background: #f4e4ff; color: #9333ea; }
-  .g-none { background: #f3f4f6; color: #9ca3af; }
+  .g-Automotive { background: #f2ddd0; color: #a04e2e; }
+  .g-Agricultural { background: #e6ecd2; color: #5c6b2f; }
+  .g-Electrical { background: #f7e9cf; color: #a6772a; }
+  .g-Other { background: #ece0d4; color: #7a5c46; }
+  .g-none { background: #efeae2; color: #a89a89; }
   .g-none::before { display: none; }
   .filter-select {
     padding: 10px 12px; border: 1px solid var(--border);
@@ -107,8 +107,8 @@
   .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.20); }
   .chip-box {
     margin-top: 14px; padding: 16px; border-radius: 14px;
-    background: linear-gradient(135deg, #fff3ee, #ffe9f0);
-    border: 1px solid #ffd9e2;
+    background: linear-gradient(135deg, #faf2e6, #f5ebda);
+    border: 1px solid #ecdcc4;
   }
   .chip-box-label { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -143,8 +143,8 @@
     color: #fff; box-shadow: 0 6px 16px rgba(var(--primary-rgb),.30);
   }
   .btn-primary:hover { filter: brightness(1.05); box-shadow: 0 8px 20px rgba(var(--primary-rgb),.38); }
-  .btn-ghost { background: #fff0eb; color: var(--primary-dark); }
-  .btn-ghost:hover { background: #ffe1d7; }
+  .btn-ghost { background: #f3e9db; color: var(--primary-dark); }
+  .btn-ghost:hover { background: #ecdfca; }
   .warn {
     background: var(--warn-bg);
     border: 1px solid var(--warn-border);
@@ -172,23 +172,23 @@
   thead th {
     text-align: left; padding: 12px; color: var(--primary-dark);
     font-size: 12px; letter-spacing: .02em; font-weight: 700;
-    background: linear-gradient(180deg, #fff2ec, #ffe9e2);
+    background: linear-gradient(180deg, #f6ede0, #efe3d1);
     border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none;
   }
   thead th:first-child { border-top-left-radius: 12px; }
   thead th:last-child { border-top-right-radius: 12px; }
-  thead th:hover { color: var(--primary); background: #ffe4db; }
+  thead th:hover { color: var(--primary); background: #eaddc8; }
   tbody td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tbody tr:hover { background: #fff6f2; }
+  tbody tr:hover { background: #faf4ea; }
   .rest-name { font-weight: 600; }
   .count-pill {
     display: inline-block; padding: 1px 8px; border-radius: 999px;
-    background: #eef2ff; color: #4338ca; font-size: 11px; font-weight: 700; white-space: nowrap;
+    background: #f0e5d3; color: #8a5a2f; font-size: 11px; font-weight: 700; white-space: nowrap;
   }
   .del-btn {
     background: transparent; color: var(--danger); padding: 6px 10px; font-size: 13px;
   }
-  .del-btn:hover { background: #fef2f2; }
+  .del-btn:hover { background: #f7ebe4; }
   .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
   .empty .big { font-size: 40px; margin-bottom: 8px; }
   .table-scroll { overflow-x: auto; }
