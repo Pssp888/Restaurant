@@ -123,6 +123,12 @@
   }
   .field input::placeholder { color: #b8bcc2; }
   .field input:hover, .field select:hover { border-color: #f0b6b9; }
+  .field input[readonly] {
+    background: linear-gradient(135deg, #fdf2f2, #fbe9ea);
+    border-color: #f6d9db; color: var(--primary-dark);
+    font-weight: 800; cursor: default;
+  }
+  .field input[readonly]:hover { border-color: #f6d9db; }
   .field select { cursor: pointer; appearance: none; }
   .field input:focus, .field select:focus {
     outline: none;
@@ -229,6 +235,7 @@
     display: inline-block; padding: 1px 8px; border-radius: 999px;
     background: #fbe3e4; color: #b1141a; font-size: 11px; font-weight: 700; white-space: nowrap;
   }
+  .staff-pill { background: #e2ecfb; color: #1f5fbf; }
   .del-btn {
     background: transparent; color: var(--danger); padding: 6px 10px; font-size: 13px;
   }
@@ -300,7 +307,14 @@
         <label>👥 จำนวนลูกค้า (คน)</label>
         <div class="input-icon">
           <span class="ic">👥</span>
-          <input type="number" id="custCount" min="1" step="1" placeholder="เช่น 3">
+          <input type="number" id="custCount" min="1" step="1" placeholder="เช่น 3" oninput="updatePerPerson()">
+        </div>
+      </div>
+      <div class="field">
+        <label>🧑‍💼 จำนวนเจ้าหน้าที่ U.M.C. (คน)</label>
+        <div class="input-icon">
+          <span class="ic">🧑‍💼</span>
+          <input type="number" id="umcStaff" min="0" step="1" placeholder="เช่น 2" oninput="updatePerPerson()">
         </div>
       </div>
       <div class="field">
@@ -322,7 +336,14 @@
         <label>💰 งบประมาณที่ใช้ (บาท)</label>
         <div class="input-icon">
           <span class="ic">💰</span>
-          <input type="number" id="budget" min="0" step="1" placeholder="เช่น 2500">
+          <input type="number" id="budget" min="0" step="1" placeholder="เช่น 2500" oninput="updatePerPerson()">
+        </div>
+      </div>
+      <div class="field">
+        <label>💵 ราคาต่อคน (บาท) — คำนวณอัตโนมัติ</label>
+        <div class="input-icon">
+          <span class="ic">💵</span>
+          <input type="text" id="perPersonOut" readonly tabindex="-1" placeholder="—">
         </div>
       </div>
     </div>
@@ -362,6 +383,7 @@
             <th onclick="sortBy('company')" class="hide-sm">🏢 บริษัท</th>
             <th onclick="sortBy('date')" class="hide-sm">📅 วันที่</th>
             <th onclick="sortBy('budget')" style="text-align:right">💰 งบ (บาท)</th>
+            <th onclick="sortBy('perperson')" style="text-align:right">💵 งบ/คน</th>
             <th></th>
           </tr>
         </thead>
@@ -437,6 +459,23 @@
   function fmtMoney(n) {
     return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   }
+  function headcount(d) { return (d.custCount || 0) + (d.umcStaff || 0); }
+  function perPerson(d) {
+    const h = headcount(d);
+    return (d.budget != null && h > 0) ? d.budget / h : null;
+  }
+  function updatePerPerson() {
+    const out = document.getElementById('perPersonOut');
+    const budget = parseFloat(document.getElementById('budget').value);
+    const cust = parseInt(document.getElementById('custCount').value, 10) || 0;
+    const staff = parseInt(document.getElementById('umcStaff').value, 10) || 0;
+    const heads = cust + staff;
+    if (!isNaN(budget) && heads > 0) {
+      out.value = `${fmtMoney(budget / heads)} บาท/คน (${heads} คน)`;
+    } else {
+      out.value = '';
+    }
+  }
 
   function addEntry() {
     const company = document.getElementById('company').value.trim();
@@ -465,10 +504,12 @@
     const dateISO = document.getElementById('visitDate').value || todayISO();
     const budgetVal = parseFloat(document.getElementById('budget').value);
     const countVal = parseInt(document.getElementById('custCount').value, 10);
+    const staffVal = parseInt(document.getElementById('umcStaff').value, 10);
     data.unshift({
       id: Date.now(),
       company, customer, group, restaurant,
       custCount: isNaN(countVal) || countVal < 1 ? null : countVal,
+      umcStaff: isNaN(staffVal) || staffVal < 0 ? null : staffVal,
       dateISO,
       date: formatDate(dateISO),
       budget: isNaN(budgetVal) ? null : budgetVal
@@ -495,7 +536,7 @@
   }
 
   function clearForm() {
-    ['company', 'customer', 'restaurant', 'budget', 'custCount'].forEach(id => document.getElementById(id).value = '');
+    ['company', 'customer', 'restaurant', 'budget', 'custCount', 'umcStaff', 'perPersonOut'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('group').value = '';
     document.getElementById('autoCompanyBox').style.display = 'none';
     document.getElementById('visitDate').value = todayISO();
@@ -525,13 +566,18 @@
 
   function renderStats() {
     const totalBudget = data.reduce((s, d) => s + (d.budget || 0), 0);
-    const totalPeople = data.reduce((s, d) => s + (d.custCount || 0), 0);
+    const totalCust = data.reduce((s, d) => s + (d.custCount || 0), 0);
+    const totalStaff = data.reduce((s, d) => s + (d.umcStaff || 0), 0);
+    const totalHeads = totalCust + totalStaff;
     const restaurants = new Set(data.map(d => norm(d.restaurant)).filter(Boolean)).size;
+    const avgPerHead = totalHeads > 0 ? totalBudget / totalHeads : 0;
     const cards = [
       { i: '🍽️', v: data.length, l: 'ครั้งที่พาไป' },
       { i: '🏬', v: restaurants, l: 'ร้านที่เคยไป' },
-      { i: '👥', v: totalPeople.toLocaleString('en-US'), l: 'ลูกค้ารวม (คน)' },
+      { i: '👥', v: totalCust.toLocaleString('en-US'), l: 'ลูกค้ารวม (คน)' },
+      { i: '🧑‍💼', v: totalStaff.toLocaleString('en-US'), l: 'เจ้าหน้าที่รวม (คน)' },
       { i: '💰', v: fmtMoney(totalBudget), l: 'งบรวม (บาท)' },
+      { i: '💵', v: fmtMoney(avgPerHead), l: 'งบเฉลี่ย/คน (บาท)' },
     ];
     document.getElementById('stats').innerHTML = cards.map(c =>
       `<div class="stat"><span class="si">${c.i}</span><div><div class="sv">${c.v}</div><div class="sl">${c.l}</div></div></div>`
@@ -554,6 +600,7 @@
       let va, vb;
       if (sortKey === 'date') { va = a.dateISO || ''; vb = b.dateISO || ''; if (va === vb) { va = a.id; vb = b.id; } }
       else if (sortKey === 'budget') { va = a.budget ?? -1; vb = b.budget ?? -1; }
+      else if (sortKey === 'perperson') { va = perPerson(a) ?? -1; vb = perPerson(b) ?? -1; }
       else { va = norm(a[sortKey]); vb = norm(b[sortKey]); }
       if (va < vb) return sortAsc ? -1 : 1;
       if (va > vb) return sortAsc ? 1 : -1;
@@ -566,18 +613,19 @@
       ` · 💰 รวม <b>${fmtMoney(totalBudget)}</b> บาท`;
 
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="big">🍽️</div>${data.length === 0 ? 'ยังไม่มีข้อมูล เริ่มเพิ่มร้านแรกได้เลย!' : 'ไม่พบรายการที่ค้นหา'}</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="big">🍽️</div>${data.length === 0 ? 'ยังไม่มีข้อมูล เริ่มเพิ่มร้านแรกได้เลย!' : 'ไม่พบรายการที่ค้นหา'}</div></td></tr>`;
       return;
     }
 
     tbody.innerHTML = rows.map(d => `
       <tr>
         <td class="rest-name">${esc(d.restaurant)}</td>
-        <td>${esc(d.customer) || '<span style="color:#9ca3af">-</span>'}${d.custCount ? ` <span class="count-pill">👥 ${d.custCount} คน</span>` : ''}</td>
+        <td>${esc(d.customer) || '<span style="color:#9ca3af">-</span>'}${d.custCount ? ` <span class="count-pill">👥 ${d.custCount}</span>` : ''}${d.umcStaff ? ` <span class="count-pill staff-pill">🧑‍💼 ${d.umcStaff}</span>` : ''}</td>
         <td>${groupBadge(d.group)}</td>
         <td class="hide-sm">${esc(d.company) || '<span style="color:#9ca3af">-</span>'}</td>
         <td class="hide-sm date-cell">${esc(d.date)}</td>
         <td style="text-align:right; font-variant-numeric: tabular-nums">${d.budget != null ? fmtMoney(d.budget) : '<span style="color:#9ca3af">-</span>'}</td>
+        <td style="text-align:right; font-variant-numeric: tabular-nums">${perPerson(d) != null ? `<b style="color:var(--primary-dark)">${fmtMoney(perPerson(d))}</b><div style="font-size:10px;color:var(--muted)">${headcount(d)} คน</div>` : '<span style="color:#9ca3af">-</span>'}</td>
         <td style="text-align:right"><button class="del-btn" onclick="del(${d.id})">🗑️ ลบ</button></td>
       </tr>
     `).join('');
