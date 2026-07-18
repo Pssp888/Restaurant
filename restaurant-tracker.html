@@ -1,0 +1,521 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บันทึกร้านอาหารพาลูกค้า</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --danger: #dc2626;
+    --warn-bg: #fef3c7;
+    --warn-border: #f59e0b;
+    --warn-text: #92400e;
+    --ok: #16a34a;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', 'Sarabun', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; opacity: .9; font-size: 14px; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card h2 { margin: 0 0 16px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .input-icon { position: relative; }
+  .input-icon .ic {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; pointer-events: none; opacity: .6;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 11px 12px 11px 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field select { cursor: pointer; appearance: none; }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+  }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .g-Automotive { background: #dbeafe; color: #1e40af; }
+  .g-Agricultural { background: #dcfce7; color: #166534; }
+  .g-Electrical { background: #fef3c7; color: #92400e; }
+  .g-Other { background: #f3e8ff; color: #6b21a8; }
+  .g-none { background: #f3f4f6; color: #9ca3af; }
+  .filter-select {
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 10px; font-size: 14px; font-family: inherit; background: #fff; cursor: pointer;
+  }
+  .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
+  .chip-box {
+    margin-top: 14px; padding: 14px; background: #fdf2f8;
+    border: 1px solid #fbcfe8; border-radius: 12px;
+  }
+  .chip-box-label { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 7px 14px; border: 1.5px solid var(--border); border-radius: 999px;
+    background: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .12s; user-select: none;
+  }
+  .chip:hover { border-color: var(--primary); }
+  .chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background .15s, transform .05s;
+  }
+  button:active { transform: translateY(1px); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-ghost { background: #f3f4f6; color: var(--text); }
+  .btn-ghost:hover { background: #e5e7eb; }
+  .warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    color: var(--warn-text);
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-top: 14px;
+    font-size: 14px;
+    display: none;
+  }
+  .warn.show { display: block; }
+  .toolbar {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 16px;
+  }
+  .toolbar .search { flex: 1; min-width: 200px; position: relative; }
+  .toolbar .search .ic { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: .5; }
+  .toolbar .search input {
+    width: 100%; padding: 10px 12px 10px 36px;
+    border: 1px solid var(--border); border-radius: 10px; font-size: 14px; font-family: inherit;
+  }
+  .toolbar .search input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
+  .count { font-size: 13px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    text-align: left; padding: 10px 12px; color: var(--muted);
+    font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+    border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none;
+  }
+  thead th:hover { color: var(--primary); }
+  tbody td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:hover { background: #fafafe; }
+  .rest-name { font-weight: 600; }
+  .del-btn {
+    background: transparent; color: var(--danger); padding: 6px 10px; font-size: 13px;
+  }
+  .del-btn:hover { background: #fef2f2; }
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty .big { font-size: 40px; margin-bottom: 8px; }
+  .table-scroll { overflow-x: auto; }
+  .date-cell { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  @media (max-width: 560px) {
+    .hide-sm { display: none; }
+  }
+  .footer-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; }
+</style>
+
+<header>
+  <h1>🍽️ บันทึกร้านอาหารพาลูกค้า</h1>
+  <p>เก็บประวัติร้านที่เคยพาลูกค้าไป จะได้ไม่พาไปซ้ำร้านเดิม</p>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <h2>➕ เพิ่มข้อมูล</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>🏢 ชื่อบริษัทลูกค้า</label>
+        <div class="input-icon">
+          <span class="ic">🏢</span>
+          <input id="company" list="companyList" placeholder="เช่น บริษัท เอบีซี จำกัด">
+          <datalist id="companyList"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label>👤 ชื่อลูกค้า</label>
+        <div class="input-icon">
+          <span class="ic">👤</span>
+          <input id="customer" list="customerList" placeholder="เช่น คุณสมชาย">
+          <datalist id="customerList"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label>🏷️ กลุ่มลูกค้า</label>
+        <div class="input-icon">
+          <span class="ic">🏷️</span>
+          <select id="group" onchange="onGroupChange()">
+            <option value="">— เลือกกลุ่ม —</option>
+            <option value="Automotive">1. Automotive</option>
+            <option value="Agricultural Diesel Engine">2. Agricultural Diesel Engine</option>
+            <option value="Electrical">3. Electrical</option>
+            <option value="Other various">4. Other various</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>🍜 ชื่อร้านอาหาร</label>
+        <div class="input-icon">
+          <span class="ic">🍜</span>
+          <input id="restaurant" list="restaurantList" placeholder="เช่น ร้านครัวคุณต่อ">
+          <datalist id="restaurantList"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label>📅 วันที่พาไป (วัน/เดือน/ปี ค.ศ.)</label>
+        <div class="input-icon">
+          <span class="ic">📅</span>
+          <input type="date" id="visitDate">
+        </div>
+      </div>
+      <div class="field">
+        <label>💰 งบประมาณที่ใช้ (บาท)</label>
+        <div class="input-icon">
+          <span class="ic">💰</span>
+          <input type="number" id="budget" min="0" step="1" placeholder="เช่น 2500">
+        </div>
+      </div>
+    </div>
+    <div id="autoCompanyBox" class="chip-box" style="display:none">
+      <div class="chip-box-label" id="chipBoxLabel">🏢 เลือกชื่อบริษัท — คลิกเพื่อเลือก</div>
+      <div id="autoChips" class="chips"></div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="addEntry()">💾 บันทึก</button>
+      <button class="btn-ghost" onclick="clearForm()">ล้างช่อง</button>
+    </div>
+    <div id="warn" class="warn"></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="search">
+        <span class="ic">🔍</span>
+        <input id="search" placeholder="ค้นหา ร้าน / ลูกค้า / บริษัท..." oninput="render()">
+      </div>
+      <select id="groupFilter" class="filter-select" onchange="render()">
+        <option value="">ทุกกลุ่ม</option>
+        <option value="Automotive">Automotive</option>
+        <option value="Agricultural Diesel Engine">Agricultural Diesel Engine</option>
+        <option value="Electrical">Electrical</option>
+        <option value="Other various">Other various</option>
+      </select>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('restaurant')">🍜 ร้านอาหาร</th>
+            <th onclick="sortBy('customer')">👤 ลูกค้า</th>
+            <th onclick="sortBy('group')">🏷️ กลุ่ม</th>
+            <th onclick="sortBy('company')" class="hide-sm">🏢 บริษัท</th>
+            <th onclick="sortBy('date')" class="hide-sm">📅 วันที่</th>
+            <th onclick="sortBy('budget')" style="text-align:right">💰 งบ (บาท)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="footer-actions">
+      <button class="btn-ghost btn-sm" onclick="exportData()">⬇️ ส่งออก (สำรองข้อมูล)</button>
+      <button class="btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⬆️ นำเข้า</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const KEY = 'restaurantTracker_v1';
+  const GROUP_COMPANIES = {
+    'Automotive': ['TEP','BMT','HINO','YSC','JFT','ISUZU','NAP','MKN','SKY','TKR','IRPC','MATCO','Ampas'],
+    'Agricultural Diesel Engine': ['KET','KJK','MFC','ITO','SKI','SKC','KPT','TYK','MMT','YSP','FKT','KPMT'],
+    'Electrical': ['DCI','DTL','FMT','SCI','ELT','IPC','KUL'],
+    'Other various': ['NKC','TSC','SKK','TCT','AMK','LKF','OCA','TEM','STM','SCK','OPM','KTS','KST','SKT','SPA','SPP','ALX','FSC','EDI','JOY']
+  };
+  let data = load();
+  let sortKey = 'date';
+  let sortAsc = false;
+
+  function onGroupChange() {
+    const g = document.getElementById('group').value;
+    const box = document.getElementById('autoCompanyBox');
+    if (GROUP_COMPANIES[g]) {
+      box.style.display = 'block';
+      document.getElementById('chipBoxLabel').textContent = `🏢 เลือกชื่อบริษัท (กลุ่ม ${g}) — คลิกเพื่อเลือก`;
+      renderAutoChips();
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
+  function renderAutoChips() {
+    const g = document.getElementById('group').value;
+    const list = GROUP_COMPANIES[g] || [];
+    const current = document.getElementById('company').value.trim();
+    document.getElementById('autoChips').innerHTML = list.map(c =>
+      `<span class="chip${c === current ? ' selected' : ''}" onclick="pickCompany('${c}')">${c}</span>`
+    ).join('');
+  }
+
+  function pickCompany(c) {
+    const input = document.getElementById('company');
+    input.value = (input.value.trim() === c) ? '' : c; // คลิกซ้ำเพื่อยกเลิก
+    renderAutoChips();
+  }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+    catch { return []; }
+  }
+  function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+
+  function norm(s) { return (s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+
+  function todayISO() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+  function formatDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`; // วัน/เดือน/ปี ค.ศ.
+  }
+  function fmtMoney(n) {
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  function addEntry() {
+    const company = document.getElementById('company').value.trim();
+    const customer = document.getElementById('customer').value.trim();
+    const group = document.getElementById('group').value;
+    const restaurant = document.getElementById('restaurant').value.trim();
+    const warn = document.getElementById('warn');
+
+    if (!restaurant) {
+      showWarn('⚠️ กรุณากรอกชื่อร้านอาหารอย่างน้อย');
+      return;
+    }
+
+    // ตรวจสอบว่าลูกค้ารายนี้ (บริษัท+ชื่อ) เคยไปร้านนี้แล้วหรือยัง
+    const dup = data.find(d =>
+      norm(d.restaurant) === norm(restaurant) &&
+      norm(d.customer) === norm(customer) &&
+      norm(d.company) === norm(company)
+    );
+    if (dup) {
+      showWarn(`🚫 เคยพา "${customer || 'ลูกค้า'}" ไปร้าน "${restaurant}" แล้ว เมื่อ ${dup.date} — ระวังพาไปซ้ำ!`);
+      return;
+    }
+
+    // เตือนเบาๆ ถ้าร้านนี้เคยพาลูกค้าคนอื่นไป (ไม่บล็อก)
+    const dateISO = document.getElementById('visitDate').value || todayISO();
+    const budgetVal = parseFloat(document.getElementById('budget').value);
+    data.unshift({
+      id: Date.now(),
+      company, customer, group, restaurant,
+      dateISO,
+      date: formatDate(dateISO),
+      budget: isNaN(budgetVal) ? null : budgetVal
+    });
+    save();
+    clearForm();
+    warn.className = 'warn show';
+    warn.style.background = '#dcfce7';
+    warn.style.borderColor = '#16a34a';
+    warn.style.color = '#166534';
+    warn.textContent = '✅ บันทึกเรียบร้อยแล้ว';
+    setTimeout(() => warn.className = 'warn', 2500);
+    render();
+    refreshDatalists();
+  }
+
+  function showWarn(msg) {
+    const warn = document.getElementById('warn');
+    warn.className = 'warn show';
+    warn.style.background = '';
+    warn.style.borderColor = '';
+    warn.style.color = '';
+    warn.textContent = msg;
+  }
+
+  function clearForm() {
+    ['company', 'customer', 'restaurant', 'budget'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('group').value = '';
+    document.getElementById('autoCompanyBox').style.display = 'none';
+    document.getElementById('visitDate').value = todayISO();
+    document.getElementById('company').focus();
+  }
+
+  function groupBadge(g) {
+    if (!g) return '<span class="badge g-none">-</span>';
+    const cls = 'g-' + g.split(' ')[0];
+    return `<span class="badge ${cls}">${esc(g)}</span>`;
+  }
+
+  function del(id) {
+    const item = data.find(d => d.id === id);
+    if (!confirm(`ลบร้าน "${item.restaurant}" (${item.customer || '-'}) ใช่หรือไม่?`)) return;
+    data = data.filter(d => d.id !== id);
+    save();
+    render();
+    refreshDatalists();
+  }
+
+  function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = true; }
+    render();
+  }
+
+  function render() {
+    const tbody = document.getElementById('tbody');
+    const q = norm(document.getElementById('search').value);
+    const gf = document.getElementById('groupFilter').value;
+    let rows = data.filter(d =>
+      (norm(d.restaurant).includes(q) ||
+       norm(d.customer).includes(q) ||
+       norm(d.company).includes(q)) &&
+      (!gf || d.group === gf)
+    );
+
+    rows.sort((a, b) => {
+      let va, vb;
+      if (sortKey === 'date') { va = a.dateISO || ''; vb = b.dateISO || ''; if (va === vb) { va = a.id; vb = b.id; } }
+      else if (sortKey === 'budget') { va = a.budget ?? -1; vb = b.budget ?? -1; }
+      else { va = norm(a[sortKey]); vb = norm(b[sortKey]); }
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    const totalBudget = rows.reduce((s, d) => s + (d.budget || 0), 0);
+    document.getElementById('count').innerHTML =
+      `ทั้งหมด ${data.length} รายการ` + (rows.length !== data.length ? ` (แสดง ${rows.length})` : '') +
+      ` · 💰 รวม <b>${fmtMoney(totalBudget)}</b> บาท`;
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="big">🍽️</div>${data.length === 0 ? 'ยังไม่มีข้อมูล เริ่มเพิ่มร้านแรกได้เลย!' : 'ไม่พบรายการที่ค้นหา'}</div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(d => `
+      <tr>
+        <td class="rest-name">${esc(d.restaurant)}</td>
+        <td>${esc(d.customer) || '<span style="color:#9ca3af">-</span>'}</td>
+        <td>${groupBadge(d.group)}</td>
+        <td class="hide-sm">${esc(d.company) || '<span style="color:#9ca3af">-</span>'}</td>
+        <td class="hide-sm date-cell">${esc(d.date)}</td>
+        <td style="text-align:right; font-variant-numeric: tabular-nums">${d.budget != null ? fmtMoney(d.budget) : '<span style="color:#9ca3af">-</span>'}</td>
+        <td style="text-align:right"><button class="del-btn" onclick="del(${d.id})">🗑️ ลบ</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function esc(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function refreshDatalists() {
+    const uniq = (key) => [...new Set(data.map(d => d[key]).filter(Boolean))].sort();
+    fillList('companyList', uniq('company'));
+    fillList('customerList', uniq('customer'));
+    fillList('restaurantList', uniq('restaurant'));
+  }
+  function fillList(id, items) {
+    document.getElementById(id).innerHTML = items.map(v => `<option value="${esc(v)}">`).join('');
+  }
+
+  function exportData() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'restaurant-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+  }
+
+  function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (!Array.isArray(imported)) throw new Error();
+        if (!confirm(`นำเข้า ${imported.length} รายการ และรวมกับข้อมูลเดิม?`)) return;
+        const ids = new Set(data.map(d => d.id));
+        imported.forEach(d => { if (!ids.has(d.id)) data.push(d); });
+        save();
+        render();
+        refreshDatalists();
+        alert('นำเข้าเรียบร้อย');
+      } catch { alert('ไฟล์ไม่ถูกต้อง'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  // Enter to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && ['company', 'customer', 'restaurant'].includes(document.activeElement.id)) {
+      addEntry();
+    }
+  });
+
+  document.getElementById('visitDate').value = todayISO();
+  render();
+  refreshDatalists();
+</script>
